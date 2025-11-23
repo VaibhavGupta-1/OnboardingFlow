@@ -33,11 +33,11 @@ fun SlidingBlueSheet(
         val density = LocalDensity.current
         val scope = rememberCoroutineScope()
 
-        // Calculate 92% of screen height SAFELY from constraints
-        val screenHeightPx = with(density) { maxHeight.toPx() }
-        val sheetHeightPx = screenHeightPx * 0.92f
+        // Calculate 92% of screen height as FIXED value
+        val sheetHeightDp = maxHeight * 0.92f
+        val sheetHeightPx = with(density) { sheetHeightDp.toPx() }
 
-        // Animatable for smooth, stable translation (starts off-screen)
+        // Animatable for smooth translation (starts off-screen)
         val translationY = remember {
             Animatable(initialValue = sheetHeightPx)
         }
@@ -48,13 +48,13 @@ fun SlidingBlueSheet(
         // Drag offset state
         var dragOffset by remember { mutableStateOf(0f) }
 
-        // Get keyboard insets (safe)
+        // Keyboard insets - used only for slight translation, NOT for resizing
         val imeInsets = WindowInsets.ime
         val imeBottomPx = imeInsets.getBottom(density).toFloat()
 
-        // Animate sheet visibility SAFELY with proper lifecycle
+        // Animate sheet visibility with proper lifecycle
         LaunchedEffect(visible, sheetHeightPx) {
-            if (sheetHeightPx > 0f) {  // Only animate when height is calculated
+            if (sheetHeightPx > 0f) {
                 if (visible) {
                     // Slide up + fade in
                     launch {
@@ -93,9 +93,9 @@ fun SlidingBlueSheet(
             }
         }
 
-        // Only render if visible or still animating
+        // Only render if visible or animating
         if (visible || translationY.value < sheetHeightPx) {
-            // Backdrop with fade
+            // Backdrop with smooth fade
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -105,14 +105,14 @@ fun SlidingBlueSheet(
                     }
             )
 
-            // Bottom sheet - 92% height, fixed
+            // Bottom sheet - FIXED height (92%), positioned at bottom
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(with(density) { sheetHeightPx.toDp() })
+                    .height(sheetHeightDp)  // FIXED height - no fillMaxSize, no unbounded
                     .align(Alignment.BottomCenter)
                     .offset {
-                        // Move up with keyboard, apply drag, apply animation
+                        // Translation: animation + drag - keyboard (moves up, doesn't resize)
                         IntOffset(
                             x = 0,
                             y = (translationY.value + dragOffset - imeBottomPx).roundToInt()
@@ -129,7 +129,7 @@ fun SlidingBlueSheet(
                         detectVerticalDragGestures(
                             onDragEnd = {
                                 scope.launch {
-                                    // Dismiss if dragged down > 40%
+                                    // Dismiss if dragged down ≥ 40%
                                     if (dragOffset > sheetHeightPx * 0.4f) {
                                         translationY.animateTo(
                                             targetValue = sheetHeightPx,
@@ -155,7 +155,7 @@ fun SlidingBlueSheet(
                         )
                     }
             ) {
-                // Layer 1: Linear gradient (180deg, #000926 → #001F52)
+                // Layer 1: Linear gradient (#000926 → #001F52)
                 Box(
                     modifier = Modifier
                         .matchParentSize()
@@ -178,7 +178,7 @@ fun SlidingBlueSheet(
                                 colors = listOf(
                                     Color(0x1F007EEB), // rgba(0,126,235,0.12)
                                     Color(0x12007EEB), // rgba(0,126,235,0.072)
-                                    Color(0x00007EEB), // rgba(0,126,235,0) at 68%
+                                    Color(0x00007EEB), // rgba(0,126,235,0)
                                     Color(0x00007EEB)
                                 ),
                                 center = androidx.compose.ui.geometry.Offset(0.5f, 1.0f),
@@ -187,6 +187,7 @@ fun SlidingBlueSheet(
                         )
                 )
 
+                // Column with bounded height
                 Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -202,11 +203,15 @@ fun SlidingBlueSheet(
                             .align(Alignment.CenterHorizontally)
                     )
 
-                    // Scrollable content area
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // BOUNDED scrollable content area using weight(1f)
+                    // This prevents infinite height constraints
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
+                            .weight(1f)  // Takes remaining space - BOUNDED height
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())  // Safe: container is bounded
                             .padding(horizontal = 24.dp)
                     ) {
                         content()
