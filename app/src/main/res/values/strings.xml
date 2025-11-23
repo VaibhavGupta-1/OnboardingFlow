@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">OnboardingFlow</string>
+    <string name="onboarding_title_alerts">Get instant alerts for scam calls</string>
+    <string name="onboarding_desc_alerts">Get instant alerts for scam calls, suspicious texts, harmful apps, and breaches.</string>
+    <string name="onboarding_title_family">Protect your family</string>
+    <string name="onboarding_desc_family">Protect your family from scams with real-time alerts and safety monitoring.</string>
+    <string name="onboarding_title_recover">Recover lost money</string>
+    <string name="onboarding_desc_recover">Recover lost money if tricked, with Shield Protect up to Rs 1,00,000.</string>
+    <string name="next">Next</string>
+    <string name="get_started">Get Started</string>
+</resources>
