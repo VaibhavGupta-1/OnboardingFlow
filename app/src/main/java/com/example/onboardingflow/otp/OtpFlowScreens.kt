@@ -51,19 +51,33 @@ fun PhoneNumberEntryScreen(
         label = "buttonScale"
     )
 
+    // Slide-up animation starting from bottom
+    var targetOffsetY by remember { mutableStateOf(1000f) }
     val offsetY by animateFloatAsState(
-        targetValue = 0f,
+        targetValue = targetOffsetY,
         animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
         label = "bottomSheetSlide"
     )
 
+    // Backdrop fade animation
+    var targetAlpha by remember { mutableStateOf(0f) }
     val alpha by animateFloatAsState(
-        targetValue = 1f,
+        targetValue = targetAlpha,
         animationSpec = tween(durationMillis = 300),
         label = "bottomSheetFade"
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    LaunchedEffect(Unit) {
+        targetOffsetY = 0f
+        targetAlpha = 1f
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars))
+    ) {
+        // Backdrop overlay with fade animation
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -188,7 +202,7 @@ fun PhoneNumberEntryScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             disabledTextColor = Color(0xFFFFFFFF),
-                            disabledBorderColor = Color(0xFFFFFF80),
+                            disabledBorderColor = Color(0xFFFFFFFF),
                             disabledContainerColor = Color.Transparent
                         ),
                         textStyle = LocalTextStyle.current.copy(
@@ -210,7 +224,7 @@ fun PhoneNumberEntryScreen(
                             Text(
                                 "Enter Phone Number",
                                 fontSize = 14.sp,
-                                color = Color(0xFFFFFF80)
+                                color = Color(0xFFFFFFFF)
                             )
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -220,7 +234,7 @@ fun PhoneNumberEntryScreen(
                             focusedTextColor = Color(0xFFFFFFFF),
                             unfocusedTextColor = Color(0xFFFFFFFF),
                             focusedBorderColor = Color(0xFF167CE3),
-                            unfocusedBorderColor = Color(0xFFFFFF80),
+                            unfocusedBorderColor = Color(0xFFFFFFFF),
                             cursorColor = Color(0xFF167CE3),
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent
