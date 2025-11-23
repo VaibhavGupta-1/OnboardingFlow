@@ -188,7 +188,7 @@ fun PhoneNumberSheetContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Continue Button - Exact Figma dual gradient
+        // Continue Button - EXACT Figma multi-layer gradient + glow + inner glow
         Button(
             onClick = {
                 view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
@@ -197,19 +197,20 @@ fun PhoneNumberSheetContent(
             enabled = phoneNumber.length == 10,
             modifier = Modifier
                 .width(312.dp)
-                .height(48.dp)
+                .height(56.dp) // 56dp pill shape from Figma
                 .align(Alignment.CenterHorizontally)
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale
                 },
-            shape = RoundedCornerShape(56.dp),
+            shape = RoundedCornerShape(28.dp), // Full pill = height/2
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
                 contentColor = Color.White,
-                disabledContainerColor = Color(0xFFFFFFFF).copy(alpha = 0.3f)
+                disabledContainerColor = Color.Transparent,
+                disabledContentColor = Color.White.copy(alpha = 0.5f)
             ),
-            contentPadding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
+            contentPadding = PaddingValues(0.dp),
             interactionSource = remember { MutableInteractionSource() }
                 .also { interactionSource ->
                     LaunchedEffect(interactionSource) {
@@ -223,47 +224,54 @@ fun PhoneNumberSheetContent(
                     }
                 }
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                // Layer 1: Base gradient linear-gradient(0deg, #007EEB, #007EEB)
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(
-                            color = Color(0xFF007EEB),
-                            shape = RoundedCornerShape(56.dp)
-                        )
-                )
-
-                // Layer 2: Radial gradient overlay
-                // radial-gradient(50% 100% at 50% 100%, #00ACFE 0%, rgba(0,172,254,0) 100%)
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xFF00ACFE),
-                                    Color(0x0000ACFE)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (phoneNumber.length == 10) {
+                            Modifier.background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color(0xFF167CE3), // Top
+                                        Color(0xFF0059C9)  // Bottom
+                                    )
                                 ),
-                                center = androidx.compose.ui.geometry.Offset(0.5f, 1.0f),
-                                radius = 500f
-                            ),
-                            shape = RoundedCornerShape(56.dp)
-                        )
-                )
-
-                // Button text
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Continue",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFFFFFFFF)
+                                shape = RoundedCornerShape(28.dp)
+                            )
+                        } else {
+                            Modifier.background(
+                                color = Color(0xFFFFFFFF).copy(alpha = 0.3f),
+                                shape = RoundedCornerShape(28.dp)
+                            )
+                        }
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                // Radial glow overlay (only when enabled)
+                if (phoneNumber.length == 10) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFF41A9F7).copy(alpha = 0.6f),
+                                        Color(0x0041A9F7)
+                                    ),
+                                    center = androidx.compose.ui.geometry.Offset(0.5f, 1.0f),
+                                    radius = 600f
+                                ),
+                                shape = RoundedCornerShape(28.dp)
+                            )
                     )
                 }
+
+                Text(
+                    text = "Continue",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (phoneNumber.length == 10) Color(0xFFFFFFFF) else Color(0xFFFFFFFF).copy(alpha = 0.5f)
+                )
             }
         }
 
@@ -468,7 +476,7 @@ fun OtpSheetContent(
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // Verify Button
+        // Verify Button - EXACT Figma multi-layer gradient
         Button(
             onClick = {
                 view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
@@ -477,19 +485,20 @@ fun OtpSheetContent(
             enabled = otp.length == 6,
             modifier = Modifier
                 .width(312.dp)
-                .height(48.dp)
+                .height(56.dp) // 56dp pill shape
                 .align(Alignment.CenterHorizontally)
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale
                 },
-            shape = RoundedCornerShape(56.dp),
+            shape = RoundedCornerShape(28.dp), // Full pill
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
                 contentColor = Color.White,
-                disabledContainerColor = Color(0xFFFFFFFF).copy(alpha = 0.3f)
+                disabledContainerColor = Color.Transparent,
+                disabledContentColor = Color.White.copy(alpha = 0.5f)
             ),
-            contentPadding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
+            contentPadding = PaddingValues(0.dp),
             interactionSource = remember { MutableInteractionSource() }
                 .also { interactionSource ->
                     LaunchedEffect(interactionSource) {
@@ -503,43 +512,54 @@ fun OtpSheetContent(
                     }
                 }
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(
-                            color = Color(0xFF007EEB),
-                            shape = RoundedCornerShape(56.dp)
-                        )
-                )
-
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xFF00ACFE),
-                                    Color(0x0000ACFE)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (otp.length == 6) {
+                            Modifier.background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color(0xFF167CE3), // Top
+                                        Color(0xFF0059C9)  // Bottom
+                                    )
                                 ),
-                                center = androidx.compose.ui.geometry.Offset(0.5f, 1.0f),
-                                radius = 500f
-                            ),
-                            shape = RoundedCornerShape(56.dp)
-                        )
-                )
-
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Verify my number",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFFFFFFFF)
+                                shape = RoundedCornerShape(28.dp)
+                            )
+                        } else {
+                            Modifier.background(
+                                color = Color(0xFFFFFFFF).copy(alpha = 0.3f),
+                                shape = RoundedCornerShape(28.dp)
+                            )
+                        }
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                // Radial glow overlay
+                if (otp.length == 6) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFF41A9F7).copy(alpha = 0.6f),
+                                        Color(0x0041A9F7)
+                                    ),
+                                    center = androidx.compose.ui.geometry.Offset(0.5f, 1.0f),
+                                    radius = 600f
+                                ),
+                                shape = RoundedCornerShape(28.dp)
+                            )
                     )
                 }
+
+                Text(
+                    text = "Verify my number",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (otp.length == 6) Color(0xFFFFFFFF) else Color(0xFFFFFFFF).copy(alpha = 0.5f)
+                )
             }
         }
 
