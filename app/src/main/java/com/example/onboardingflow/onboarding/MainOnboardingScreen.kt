@@ -8,7 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -20,10 +20,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.onboardingflow.R
+import com.example.onboardingflow.sheet.OnboardingHost
 
 @Composable
 fun MainOnboardingScreen(
     onContinue: () -> Unit
+) {
+    var sheetVisible by remember { mutableStateOf(false) }
+
+    OnboardingHost(
+        sheetVisible = sheetVisible,
+        onDismissSheet = { sheetVisible = false },
+        iUnderstandScreen = { onShowSheet ->
+            MainOnboardingContent(
+                onUnderstandClick = { sheetVisible = true }
+            )
+        }
+    )
+}
+
+@Composable
+private fun MainOnboardingContent(
+    onUnderstandClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -133,7 +151,7 @@ fun MainOnboardingScreen(
 
             // CTA Button (pill-shaped with gradient)
             Button(
-                onClick = onContinue,
+                onClick = onUnderstandClick,
                 modifier = Modifier
                     .width(312.dp)
                     .height(48.dp),
