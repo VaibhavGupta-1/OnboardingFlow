@@ -21,7 +21,7 @@ sealed class SheetRoute {
 fun OnboardingHost(
     sheetVisible: Boolean,
     onDismissSheet: () -> Unit,
-    iUnderstandScreen: @Composable (onShowSheet: () -> Unit) -> Unit
+    iUnderstandScreen: @Composable () -> Unit
 ) {
     var currentRoute by remember { mutableStateOf<SheetRoute>(SheetRoute.Phone) }
 
@@ -59,7 +59,7 @@ fun OnboardingHost(
 
     // Base screen: "I Understand" screen
     Box {
-        iUnderstandScreen(onDismissSheet)
+        iUnderstandScreen()
 
         // Sliding blue sheet overlay
         SlidingBlueSheet(

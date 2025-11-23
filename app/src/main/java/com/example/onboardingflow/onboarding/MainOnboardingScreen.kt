@@ -31,7 +31,7 @@ fun MainOnboardingScreen(
     OnboardingHost(
         sheetVisible = sheetVisible,
         onDismissSheet = { sheetVisible = false },
-        iUnderstandScreen = { onShowSheet ->
+        iUnderstandScreen = {
             MainOnboardingContent(
                 onUnderstandClick = { sheetVisible = true }
             )

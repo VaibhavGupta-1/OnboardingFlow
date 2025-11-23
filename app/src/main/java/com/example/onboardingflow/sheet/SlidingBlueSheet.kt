@@ -15,10 +15,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
@@ -27,68 +27,95 @@ fun SlidingBlueSheet(
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    val configuration = LocalConfiguration.current
-    val density = LocalDensity.current
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        val density = LocalDensity.current
+        val scope = rememberCoroutineScope()
 
-    val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
-    val sheetMaxHeight = screenHeightPx * 0.92f // 92% fixed height
+        // Calculate 92% of screen height SAFELY from constraints
+        val screenHeightPx = with(density) { maxHeight.toPx() }
+        val sheetHeightPx = screenHeightPx * 0.92f
 
-    var dragOffset by remember { mutableStateOf(0f) }
-
-    // Smooth spring animation for sheet entrance/exit
-    val targetOffset = if (visible) 0f else sheetMaxHeight
-    val animatedOffset by animateFloatAsState(
-        targetValue = targetOffset,
-        animationSpec = spring(
-            dampingRatio = 0.75f,
-            stiffness = 300f
-        ),
-        label = "sheetOffset"
-    )
-
-    // Backdrop alpha animation
-    val backdropAlpha by animateFloatAsState(
-        targetValue = if (visible) 0.5f else 0f,
-        animationSpec = tween(durationMillis = 300),
-        label = "backdropAlpha"
-    )
-
-    // Get keyboard height for moving sheet up (not shrinking)
-    val imeInsets = WindowInsets.ime
-    val imeBottomPx = imeInsets.getBottom(density)
-
-    LaunchedEffect(visible) {
-        if (!visible) {
-            dragOffset = 0f
+        // Animatable for smooth, stable translation (starts off-screen)
+        val translationY = remember {
+            Animatable(initialValue = sheetHeightPx)
         }
-    }
 
-    if (visible || animatedOffset < sheetMaxHeight) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            // Backdrop with smooth fade
+        // Animatable for backdrop alpha
+        val backdropAlpha = remember { Animatable(0f) }
+
+        // Drag offset state
+        var dragOffset by remember { mutableStateOf(0f) }
+
+        // Get keyboard insets (safe)
+        val imeInsets = WindowInsets.ime
+        val imeBottomPx = imeInsets.getBottom(density).toFloat()
+
+        // Animate sheet visibility SAFELY with proper lifecycle
+        LaunchedEffect(visible, sheetHeightPx) {
+            if (sheetHeightPx > 0f) {  // Only animate when height is calculated
+                if (visible) {
+                    // Slide up + fade in
+                    launch {
+                        translationY.animateTo(
+                            targetValue = 0f,
+                            animationSpec = spring(
+                                dampingRatio = 0.75f,
+                                stiffness = 300f
+                            )
+                        )
+                    }
+                    launch {
+                        backdropAlpha.animateTo(
+                            targetValue = 0.5f,
+                            animationSpec = tween(durationMillis = 300)
+                        )
+                    }
+                } else {
+                    // Slide down + fade out
+                    launch {
+                        translationY.animateTo(
+                            targetValue = sheetHeightPx,
+                            animationSpec = spring(
+                                dampingRatio = 0.75f,
+                                stiffness = 300f
+                            )
+                        )
+                    }
+                    launch {
+                        backdropAlpha.animateTo(
+                            targetValue = 0f,
+                            animationSpec = tween(durationMillis = 300)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Only render if visible or still animating
+        if (visible || translationY.value < sheetHeightPx) {
+            // Backdrop with fade
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = backdropAlpha))
+                    .background(Color.Black.copy(alpha = backdropAlpha.value))
                     .pointerInput(Unit) {
                         detectVerticalDragGestures { _, _ -> }
                     }
             )
 
-            // Bottom sheet with keyboard-aware positioning
+            // Bottom sheet - 92% height, fixed
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(with(density) { sheetMaxHeight.toDp() })
+                    .height(with(density) { sheetHeightPx.toDp() })
                     .align(Alignment.BottomCenter)
                     .offset {
-                        // Move sheet up with keyboard, add drag offset, add animation offset
+                        // Move up with keyboard, apply drag, apply animation
                         IntOffset(
                             x = 0,
-                            y = (animatedOffset + dragOffset - imeBottomPx.toFloat()).roundToInt()
+                            y = (translationY.value + dragOffset - imeBottomPx).roundToInt()
                         )
                     }
                     .shadow(
@@ -101,11 +128,21 @@ fun SlidingBlueSheet(
                     .pointerInput(Unit) {
                         detectVerticalDragGestures(
                             onDragEnd = {
-                                // Dismiss if dragged down more than 40%
-                                if (dragOffset > sheetMaxHeight * 0.4f) {
-                                    onDismiss()
+                                scope.launch {
+                                    // Dismiss if dragged down > 40%
+                                    if (dragOffset > sheetHeightPx * 0.4f) {
+                                        translationY.animateTo(
+                                            targetValue = sheetHeightPx,
+                                            animationSpec = spring(dampingRatio = 0.75f, stiffness = 300f)
+                                        )
+                                        backdropAlpha.animateTo(
+                                            targetValue = 0f,
+                                            animationSpec = tween(durationMillis = 300)
+                                        )
+                                        onDismiss()
+                                    }
+                                    dragOffset = 0f
                                 }
-                                dragOffset = 0f
                             },
                             onDragCancel = {
                                 dragOffset = 0f
@@ -118,7 +155,7 @@ fun SlidingBlueSheet(
                         )
                     }
             ) {
-                // Layer 1: Linear gradient (180deg, #000926 50%, #001F52 100%)
+                // Layer 1: Linear gradient (180deg, #000926 → #001F52)
                 Box(
                     modifier = Modifier
                         .matchParentSize()
@@ -132,8 +169,7 @@ fun SlidingBlueSheet(
                         )
                 )
 
-                // Layer 2: Radial gradient glow
-                // radial-gradient(245.4% 100% at 50% 100%, rgba(0,126,235,0.12) 0%, rgba(0,126,235,0.072) 20%, rgba(0,126,235,0) 68%)
+                // Layer 2: Radial gradient glow (Figma exact)
                 Box(
                     modifier = Modifier
                         .matchParentSize()
@@ -166,7 +202,7 @@ fun SlidingBlueSheet(
                             .align(Alignment.CenterHorizontally)
                     )
 
-                    // Content area with scroll
+                    // Scrollable content area
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
