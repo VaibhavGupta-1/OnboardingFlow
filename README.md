@@ -1,17 +1,64 @@
 <div align="center">
 
-# 🛡️ Shield - Onboarding & OTP Verification Flow
+# 🛡️ Shield - Modern Onboarding & Auth Flow
 
-### A production-grade Android app showcasing modern mobile development practices
+### Enterprise-Grade Android Implementation using Jetpack Compose
 
-[![Kotlin](https://img.shields.io/badge/Kotlin-100%25-blueviolet?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
-[![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-UI-4285F4?style=for-the-badge&logo=jetpack-compose)](https://developer.android.com/jetpack/compose)
-[![Material 3](https://img.shields.io/badge/Material%203-Design-673AB7?style=for-the-badge)](https://m3.material.io/)
-[![MVVM](https://img.shields.io/badge/Architecture-MVVM-orange?style=for-the-badge)](https://developer.android.com/jetpack/guide)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-purple?logo=kotlin&style=for-the-badge)](https://kotlinlang.org)
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-UI%20Toolkit-4285F4?logo=jetpack-compose&style=for-the-badge)](https://developer.android.com/jetpack/compose)
+[![Material 3](https://img.shields.io/badge/Design-Material%203-blue?logo=material-design&style=for-the-badge)](https://m3.material.io)
+[![Architecture](https://img.shields.io/badge/Architecture-MVVM-orange?style=for-the-badge)](https://developer.android.com/topic/architecture)
+
+<br />
+
+<p align="center">
+  A <strong>production-ready</strong> authentication module featuring a smooth onboarding carousel, 
+  secure OTP verification, and persistent user state management.
+  <br>
+  Built with <strong>Clean Architecture</strong> principles and <strong>Zero XML</strong>.
+</p>
 
 </div>
 
 ---
+
+## 📸 Application Flow
+
+<div align="center">
+
+<!-- ROW 1: ONBOARDING FLOW -->
+<table>
+  <tr>
+    <td align="center"><b>Onboarding Step 1</b></td>
+    <td align="center"><b>Onboarding Step 2</b></td>
+    <td align="center"><b>Onboarding Step 3</b></td>
+  </tr>
+  <tr>
+    <!-- Replace these links with your actual Onboarding screenshots -->
+    <td><img src="https://github.com/user-attachments/assets/cfa3de6f-c4c5-4fa5-8a72-6e0eb8671e4d" width="250" /></td>
+    <td><img src="https://github.com/user-attachments/assets/bc9fba6f-fc09-4e07-a877-ee4c0a61852e" width="250" /></td>
+    <td><img src="https://github.com/user-attachments/assets/6864606c-f82e-47cc-8744-c61318d21849" width="250" /></td>
+  </tr>
+</table>
+
+<!-- ROW 2: VERIFICATION FLOW -->
+<table>
+  <tr>
+    <td align="center"><b>Main Onboarding Screen</b></td>
+    <td align="center"><b>Phone Input</b></td>
+    <td align="center"><b>OTP Verification</b></td>
+    <td align="center"><b>Success State</b></td>
+  </tr>
+  <tr>
+    <!-- Replace these links with your actual Auth screenshots -->
+    <td><img src="https://github.com/user-attachments/assets/fe3dc74d-65c1-4501-86fd-b96562be723e" width="250" /></td>
+    <td><img src="https://github.com/user-attachments/assets/86a4204b-c56a-4c61-9d6e-888b5a5446ec" width="250" /></td>
+    <td><img src="https://github.com/user-attachments/assets/7ed540b4-af00-47a5-9c6a-45130892fe3d" width="250" /></td>
+    <td><img src="https://github.com/user-attachments/assets/13f70293-6205-4253-9a0d-869b2c2292fe" width="250" /></td>
+  </tr>
+</table>
+
+</div>
 
 ## 📱 Project Overview
 
@@ -52,12 +99,6 @@ A delightful first-time user experience with smooth, engaging interactions.
 - 💾 **One-Time Flow** - Automatically skips on subsequent launches via DataStore
 
 **Technical Highlights:**
-```kotlin
-• HorizontalPager with state management
-• Custom Canvas illustrations (no image assets)
-• Animated indicator transitions
-• ViewModelFactory for dependency injection
-```
 
 ---
 
