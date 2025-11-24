@@ -55,6 +55,7 @@ fun PhoneNumberSheetContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .wrapContentHeight()
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(modifier = Modifier.height(16.dp))
@@ -316,6 +317,7 @@ fun OtpSheetContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .wrapContentHeight()
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(modifier = Modifier.height(16.dp))
