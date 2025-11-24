@@ -424,7 +424,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 **Built with ❤️ using Kotlin & Jetpack Compose**
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/shield-onboarding?style=social)](https://github.com/yourusername/shield-onboarding)
+[![GitHub stars](https://img.shields.io/github/stars/VaibhavGupta-1/OnboardingFlow?style=social)](https://github.com/VaibhavGupta-1/OnboardingFlow)
 
 ---
 
