@@ -72,11 +72,13 @@ fun PhoneNumberEntryScreen(
         targetAlpha = 1f
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars))
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize()
     ) {
+        val screenHeight = maxHeight
+        val sheetHeightDp = screenHeight * 0.92f
+        val imeHeightDp = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+
         // Backdrop overlay with fade animation
         Box(
             modifier = Modifier
@@ -91,10 +93,10 @@ fun PhoneNumberEntryScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(420.dp)
+                .height(sheetHeightDp)
                 .align(Alignment.BottomCenter)
                 .graphicsLayer {
-                    translationY = offsetY
+                    translationY = offsetY - imeHeightDp.toPx()
                     this.alpha = alpha
                 }
                 .shadow(
@@ -104,6 +106,7 @@ fun PhoneNumberEntryScreen(
                 )
                 .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
         ) {
+            // Background gradient layer 1
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -117,6 +120,7 @@ fun PhoneNumberEntryScreen(
                     )
             )
 
+            // Background gradient layer 2 (radial glow)
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -134,12 +138,11 @@ fun PhoneNumberEntryScreen(
                     )
             )
 
+            // Content with fixed height to avoid infinite constraint
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp)
+                modifier = Modifier.fillMaxSize()
             ) {
+                // Pull handle
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Box(
@@ -153,8 +156,11 @@ fun PhoneNumberEntryScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Close button
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     contentAlignment = Alignment.TopEnd
                 ) {
                     IconButton(onClick = onBack) {
@@ -167,187 +173,201 @@ fun PhoneNumberEntryScreen(
                     }
                 }
 
-                Text(
-                    text = "Verify your phone number",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFFFFFFFF),
-                    lineHeight = 38.4.sp,
-                    letterSpacing = (-0.64).sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "We're verifying your number securely before any SMS is sent.",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Color(0xFFFFFFFF).copy(alpha = 0.72f),
-                    lineHeight = 18.sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedTextField(
-                        value = "+91",
-                        onValueChange = {},
-                        enabled = false,
-                        modifier = Modifier.width(80.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            disabledTextColor = Color(0xFFFFFFFF),
-                            disabledBorderColor = Color(0xFFFFFFFF),
-                            disabledContainerColor = Color.Transparent
-                        ),
-                        textStyle = LocalTextStyle.current.copy(
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = Color(0xFFFFFFFF)
-                        )
-                    )
-
-                    OutlinedTextField(
-                        value = phoneNumber,
-                        onValueChange = { newValue ->
-                            if (newValue.length <= 10 && newValue.all { it.isDigit() }) {
-                                onPhoneChanged(newValue)
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                        placeholder = {
-                            Text(
-                                "Enter Phone Number",
-                                fontSize = 14.sp,
-                                color = Color(0xFFFFFFFF)
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color(0xFFFFFFFF),
-                            unfocusedTextColor = Color(0xFFFFFFFF),
-                            focusedBorderColor = Color(0xFF167CE3),
-                            unfocusedBorderColor = Color(0xFFFFFFFF),
-                            cursorColor = Color(0xFF167CE3),
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
-                        ),
-                        textStyle = LocalTextStyle.current.copy(
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = Color(0xFFFFFFFF)
-                        ),
-                        isError = errorMessage != null
-                    )
-                }
-
-                if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = errorMessage,
-                        color = Color(0xFFFF6B6B),
-                        fontSize = 12.sp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                Text(
-                    text = "By continuing, you agree to our Terms & Conditions",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Color(0xFFFFFFFF).copy(alpha = 0.72f),
-                    textAlign = TextAlign.Center,
-                    textDecoration = TextDecoration.Underline,
-                    lineHeight = 18.sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = {
-                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                        onSendOtp()
-                    },
-                    enabled = phoneNumber.length == 10,
+                // Scrollable content area with bounded height
+                Box(
                     modifier = Modifier
-                        .width(312.dp)
-                        .height(48.dp)
-                        .align(Alignment.CenterHorizontally)
-                        .graphicsLayer {
-                            scaleX = scale
-                            scaleY = scale
-                        },
-                    shape = RoundedCornerShape(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color.White,
-                        disabledContainerColor = Color.Gray.copy(alpha = 0.3f)
-                    ),
-                    contentPadding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
-                    interactionSource = remember { MutableInteractionSource() }
-                        .also { interactionSource ->
-                            LaunchedEffect(interactionSource) {
-                                interactionSource.interactions.collect { interaction ->
-                                    when (interaction) {
-                                        is PressInteraction.Press -> isPressed = true
-                                        is PressInteraction.Release -> isPressed = false
-                                        is PressInteraction.Cancel -> isPressed = false
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 24.dp)
+                    ) {
+                        Text(
+                            text = "Verify your phone number",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFFFFFFF),
+                            lineHeight = 38.4.sp,
+                            letterSpacing = (-0.64).sp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "We're verifying your number securely before any SMS is sent.",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color(0xFFFFFFFF).copy(alpha = 0.72f),
+                            lineHeight = 18.sp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(40.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = "+91",
+                                onValueChange = {},
+                                enabled = false,
+                                modifier = Modifier.width(80.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = Color(0xFFFFFFFF),
+                                    disabledBorderColor = Color(0xFFFFFFFF),
+                                    disabledContainerColor = Color.Transparent
+                                ),
+                                textStyle = LocalTextStyle.current.copy(
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = Color(0xFFFFFFFF)
+                                )
+                            )
+
+                            OutlinedTextField(
+                                value = phoneNumber,
+                                onValueChange = { newValue ->
+                                    if (newValue.length <= 10 && newValue.all { it.isDigit() }) {
+                                        onPhoneChanged(newValue)
                                     }
+                                },
+                                modifier = Modifier.weight(1f),
+                                placeholder = {
+                                    Text(
+                                        "Enter Phone Number",
+                                        fontSize = 14.sp,
+                                        color = Color(0xFFFFFFFF).copy(alpha = 0.5f)
+                                    )
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedTextColor = Color(0xFFFFFFFF),
+                                    unfocusedTextColor = Color(0xFFFFFFFF),
+                                    focusedBorderColor = Color(0xFF167CE3),
+                                    unfocusedBorderColor = Color(0xFFFFFFFF).copy(alpha = 0.5f),
+                                    cursorColor = Color(0xFF167CE3),
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent
+                                ),
+                                textStyle = LocalTextStyle.current.copy(
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = Color(0xFFFFFFFF)
+                                ),
+                                isError = errorMessage != null
+                            )
+                        }
+
+                        if (errorMessage != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = errorMessage,
+                                color = Color(0xFFFF6B6B),
+                                fontSize = 12.sp,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(40.dp))
+
+                        Text(
+                            text = "By continuing, you agree to our Terms & Conditions",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color(0xFFFFFFFF).copy(alpha = 0.72f),
+                            textAlign = TextAlign.Center,
+                            textDecoration = TextDecoration.Underline,
+                            lineHeight = 18.sp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Button(
+                            onClick = {
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                onSendOtp()
+                            },
+                            enabled = phoneNumber.length == 10,
+                            modifier = Modifier
+                                .width(312.dp)
+                                .height(48.dp)
+                                .align(Alignment.CenterHorizontally)
+                                .graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                },
+                            shape = RoundedCornerShape(56.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = Color.White,
+                                disabledContainerColor = Color.Gray.copy(alpha = 0.3f)
+                            ),
+                            contentPadding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
+                            interactionSource = remember { MutableInteractionSource() }
+                                .also { interactionSource ->
+                                    LaunchedEffect(interactionSource) {
+                                        interactionSource.interactions.collect { interaction ->
+                                            when (interaction) {
+                                                is PressInteraction.Press -> isPressed = true
+                                                is PressInteraction.Release -> isPressed = false
+                                                is PressInteraction.Cancel -> isPressed = false
+                                            }
+                                        }
+                                    }
+                                }
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(
+                                            color = Color(0xFF007EEB),
+                                            shape = RoundedCornerShape(56.dp)
+                                        )
+                                )
+
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(
+                                            brush = Brush.radialGradient(
+                                                colors = listOf(
+                                                    Color(0xFF00ACFE),
+                                                    Color(0x0000ACFE)
+                                                ),
+                                                center = androidx.compose.ui.geometry.Offset(0.5f, 1.0f),
+                                                radius = 500f
+                                            ),
+                                            shape = RoundedCornerShape(56.dp)
+                                        )
+                                )
+
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Continue",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFFFFFFFF)
+                                    )
                                 }
                             }
                         }
-                ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(
-                                    color = Color(0xFF007EEB),
-                                    shape = RoundedCornerShape(56.dp)
-                                )
-                        )
 
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(
-                                    brush = Brush.radialGradient(
-                                        colors = listOf(
-                                            Color(0xFF00ACFE),
-                                            Color(0x0000ACFE)
-                                        ),
-                                        center = androidx.compose.ui.geometry.Offset(0.5f, 1.0f),
-                                        radius = 500f
-                                    ),
-                                    shape = RoundedCornerShape(56.dp)
-                                )
-                        )
-
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Continue",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFFFFFFF)
-                            )
-                        }
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
@@ -395,7 +415,12 @@ fun OtpEntryScreen(
         label = "otpBoxGlow"
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val screenHeight = maxHeight
+        val sheetHeightDp = screenHeight * 0.92f
+        val imeHeightDp = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+
+        // Backdrop
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -409,10 +434,10 @@ fun OtpEntryScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(420.dp)
+                .height(sheetHeightDp)
                 .align(Alignment.BottomCenter)
                 .graphicsLayer {
-                    translationY = offsetY
+                    translationY = offsetY - imeHeightDp.toPx()
                     this.alpha = alpha
                 }
                 .shadow(
@@ -422,6 +447,7 @@ fun OtpEntryScreen(
                 )
                 .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
         ) {
+            // Background gradient layer 1
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -435,6 +461,7 @@ fun OtpEntryScreen(
                     )
             )
 
+            // Background gradient layer 2
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -452,12 +479,11 @@ fun OtpEntryScreen(
                     )
             )
 
+            // Content with fixed height to avoid infinite constraint
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp)
+                modifier = Modifier.fillMaxSize()
             ) {
+                // Pull handle
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Box(
@@ -471,8 +497,11 @@ fun OtpEntryScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Back button
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     contentAlignment = Alignment.TopStart
                 ) {
                     IconButton(onClick = onBack) {
@@ -484,218 +513,237 @@ fun OtpEntryScreen(
                     }
                 }
 
-                Text(
-                    text = "Enter the OTP sent to your Phone",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFFFFFFFF),
-                    lineHeight = 28.8.sp,
-                    letterSpacing = (-0.48).sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "We sent a code to +91 $phoneNumber",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Color(0xFFFFFFFF).copy(alpha = 0.72f),
-                    lineHeight = 18.sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
-                    ) {
-                        for (i in 0 until 6) {
-                            val isFilled = i < otp.length
-                            val isCurrent = i == otp.length
-                            val isInvalid = hasInvalidOtp
-
-                            Box(
-                                modifier = Modifier
-                                    .width(45.33.dp)
-                                    .height(48.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(
-                                        if (isInvalid) Color(0xFFFFEBEC)
-                                        else Color.White.copy(alpha = 0.1f)
-                                    )
-                                    .border(
-                                        width = 1.dp,
-                                        color = when {
-                                            isInvalid -> Color(0xFFFF6B6B)
-                                            isFilled -> Color.White
-                                            isCurrent -> Color(0xFF167CE3).copy(alpha = glowAlpha.coerceAtLeast(1f))
-                                            else -> Color.White.copy(alpha = 0.3f)
-                                        },
-                                        shape = RoundedCornerShape(12.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = otp.getOrNull(i)?.toString() ?: "",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (isInvalid) Color(0xFFFF6B6B) else Color.White,
-                                    lineHeight = 22.4.sp,
-                                    letterSpacing = (-0.32).sp
-                                )
-                            }
-                        }
-                    }
-
-                    BasicTextField(
-                        value = otp,
-                        onValueChange = { newValue ->
-                            if (newValue.length <= 6 && (newValue.isEmpty() || newValue.all { it.isDigit() })) {
-                                if (newValue != otp) {
-                                    view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                                }
-                                onOtpChanged(newValue)
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        cursorBrush = SolidColor(Color.Transparent),
-                        decorationBox = { }
-                    )
-                }
-
-                if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = errorMessage,
-                        color = Color(0xFFFF6B6B),
-                        fontSize = 12.sp,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    if (canResend) {
-                        TextButton(onClick = {
-                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                            onResend()
-                        }) {
-                            Text(
-                                "Didn't receive the code? ",
-                                color = Color.White.copy(alpha = 0.7f),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Normal,
-                                lineHeight = 19.6.sp
-                            )
-                            Text(
-                                "Resend Code",
-                                color = Color(0xFF00B7FF),
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp,
-                                lineHeight = 19.6.sp,
-                                textDecoration = TextDecoration.Underline
-                            )
-                        }
-                    } else {
-                        Text(
-                            text = "Resend OTP in ${timerSeconds}s",
-                            color = Color.White.copy(alpha = 0.7f),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Normal,
-                            lineHeight = 19.6.sp
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                Button(
-                    onClick = {
-                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                        onVerify()
-                    },
-                    enabled = otp.length == 6,
+                // Scrollable content area with bounded height
+                Box(
                     modifier = Modifier
-                        .width(312.dp)
-                        .height(48.dp)
-                        .align(Alignment.CenterHorizontally)
-                        .graphicsLayer {
-                            scaleX = scale
-                            scaleY = scale
-                        },
-                    shape = RoundedCornerShape(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color.White,
-                        disabledContainerColor = Color.Gray.copy(alpha = 0.3f)
-                    ),
-                    contentPadding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
-                    interactionSource = remember { MutableInteractionSource() }
-                        .also { interactionSource ->
-                            LaunchedEffect(interactionSource) {
-                                interactionSource.interactions.collect { interaction ->
-                                    when (interaction) {
-                                        is PressInteraction.Press -> isPressed = true
-                                        is PressInteraction.Release -> isPressed = false
-                                        is PressInteraction.Cancel -> isPressed = false
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 24.dp)
+                    ) {
+                        Text(
+                            text = "Enter the OTP sent to your Phone",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFFFFFFF),
+                            lineHeight = 28.8.sp,
+                            letterSpacing = (-0.48).sp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "We sent a code to +91 $phoneNumber",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color(0xFFFFFFFF).copy(alpha = 0.72f),
+                            lineHeight = 18.sp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(40.dp))
+
+                        // OTP Input Boxes with invisible overlay
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
+                            ) {
+                                for (i in 0 until 6) {
+                                    val isFilled = i < otp.length
+                                    val isCurrent = i == otp.length
+                                    val isInvalid = hasInvalidOtp
+
+                                    Box(
+                                        modifier = Modifier
+                                            .width(45.33.dp)
+                                            .height(48.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(
+                                                if (isInvalid) Color(0xFFFFEBEC)
+                                                else Color.White.copy(alpha = 0.1f)
+                                            )
+                                            .border(
+                                                width = 1.dp,
+                                                color = when {
+                                                    isInvalid -> Color(0xFFFF6B6B)
+                                                    isFilled -> Color.White
+                                                    isCurrent -> Color(0xFF167CE3)
+                                                        .copy(alpha = glowAlpha.coerceAtLeast(1f))
+                                                    else -> Color.White.copy(alpha = 0.3f)
+                                                },
+                                                shape = RoundedCornerShape(12.dp)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = otp.getOrNull(i)?.toString() ?: "",
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = if (isInvalid) Color(0xFFFF6B6B) else Color.White,
+                                            lineHeight = 22.4.sp,
+                                            letterSpacing = (-0.32).sp
+                                        )
                                     }
                                 }
                             }
-                        }
-                ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(
-                                    color = Color(0xFF007EEB),
-                                    shape = RoundedCornerShape(56.dp)
-                                )
-                        )
 
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(
-                                    brush = Brush.radialGradient(
-                                        colors = listOf(
-                                            Color(0xFF00ACFE),
-                                            Color(0x0000ACFE)
-                                        ),
-                                        center = androidx.compose.ui.geometry.Offset(0.5f, 1.0f),
-                                        radius = 500f
-                                    ),
-                                    shape = RoundedCornerShape(56.dp)
-                                )
-                        )
-
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Verify my number",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFFFFFFF)
+                            // Invisible overlay for input
+                            BasicTextField(
+                                value = otp,
+                                onValueChange = { newValue ->
+                                    if (newValue.length <= 6 && (newValue.isEmpty() || newValue.all { it.isDigit() })) {
+                                        if (newValue != otp) {
+                                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                                        }
+                                        onOtpChanged(newValue)
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                singleLine = true,
+                                cursorBrush = SolidColor(Color.Transparent),
+                                decorationBox = { }
                             )
                         }
+
+                        if (errorMessage != null) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = errorMessage,
+                                color = Color(0xFFFF6B6B),
+                                fontSize = 12.sp,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Resend timer/button
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            if (canResend) {
+                                TextButton(onClick = {
+                                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                    onResend()
+                                }) {
+                                    Text(
+                                        "Didn't receive the code? ",
+                                        color = Color.White.copy(alpha = 0.7f),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Normal,
+                                        lineHeight = 19.6.sp
+                                    )
+                                    Text(
+                                        "Resend Code",
+                                        color = Color(0xFF00B7FF),
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 14.sp,
+                                        lineHeight = 19.6.sp,
+                                        textDecoration = TextDecoration.Underline
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = "Resend OTP in ${timerSeconds}s",
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    lineHeight = 19.6.sp
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(40.dp))
+
+                        // Verify button
+                        Button(
+                            onClick = {
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                onVerify()
+                            },
+                            enabled = otp.length == 6,
+                            modifier = Modifier
+                                .width(312.dp)
+                                .height(48.dp)
+                                .align(Alignment.CenterHorizontally)
+                                .graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                },
+                            shape = RoundedCornerShape(56.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = Color.White,
+                                disabledContainerColor = Color.Gray.copy(alpha = 0.3f)
+                            ),
+                            contentPadding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
+                            interactionSource = remember { MutableInteractionSource() }
+                                .also { interactionSource ->
+                                    LaunchedEffect(interactionSource) {
+                                        interactionSource.interactions.collect { interaction ->
+                                            when (interaction) {
+                                                is PressInteraction.Press -> isPressed = true
+                                                is PressInteraction.Release -> isPressed = false
+                                                is PressInteraction.Cancel -> isPressed = false
+                                            }
+                                        }
+                                    }
+                                }
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(
+                                            color = Color(0xFF007EEB),
+                                            shape = RoundedCornerShape(56.dp)
+                                        )
+                                )
+
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(
+                                            brush = Brush.radialGradient(
+                                                colors = listOf(
+                                                    Color(0xFF00ACFE),
+                                                    Color(0x0000ACFE)
+                                                ),
+                                                center = androidx.compose.ui.geometry.Offset(0.5f, 1.0f),
+                                                radius = 500f
+                                            ),
+                                            shape = RoundedCornerShape(56.dp)
+                                        )
+                                )
+
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Verify my number",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFFFFFFFF)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }

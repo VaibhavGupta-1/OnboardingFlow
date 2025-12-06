@@ -54,7 +54,8 @@ fun PhoneNumberSheetContent(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .heightIn(max = 420.dp)
             .wrapContentHeight()
             .verticalScroll(rememberScrollState())
     ) {
@@ -198,83 +199,67 @@ fun PhoneNumberSheetContent(
             enabled = phoneNumber.length == 10,
             modifier = Modifier
                 .width(312.dp)
-                .height(56.dp) // 56dp pill shape from Figma
+                .height(56.dp)
                 .align(Alignment.CenterHorizontally)
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale
                 },
-            shape = RoundedCornerShape(28.dp), // Full pill = height/2
+            shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
                 contentColor = Color.White,
-                disabledContainerColor = Color.Transparent,
-                disabledContentColor = Color.White.copy(alpha = 0.5f)
+                disabledContainerColor = Color.Transparent
             ),
-            contentPadding = PaddingValues(0.dp),
-            interactionSource = remember { MutableInteractionSource() }
-                .also { interactionSource ->
-                    LaunchedEffect(interactionSource) {
-                        interactionSource.interactions.collect { interaction ->
-                            when (interaction) {
-                                is PressInteraction.Press -> isPressed = true
-                                is PressInteraction.Release -> isPressed = false
-                                is PressInteraction.Cancel -> isPressed = false
-                            }
-                        }
-                    }
-                }
+            contentPadding = PaddingValues(0.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (phoneNumber.length == 10) {
-                            Modifier.background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color(0xFF167CE3), // Top
-                                        Color(0xFF0059C9)  // Bottom
-                                    )
-                                ),
-                                shape = RoundedCornerShape(28.dp)
-                            )
-                        } else {
-                            Modifier.background(
-                                color = Color(0xFFFFFFFF).copy(alpha = 0.3f),
-                                shape = RoundedCornerShape(28.dp)
-                            )
-                        }
-                    ),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()   // ✔ replace matchParentSize()
             ) {
-                // Radial glow overlay (only when enabled)
-                if (phoneNumber.length == 10) {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color(0xFF41A9F7).copy(alpha = 0.6f),
-                                        Color(0x0041A9F7)
-                                    ),
-                                    center = androidx.compose.ui.geometry.Offset(0.5f, 1.0f),
-                                    radius = 600f
-                                ),
-                                shape = RoundedCornerShape(28.dp)
-                            )
-                    )
-                }
+                // Gradient background
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()   // ✔
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0xFF167CE3),
+                                    Color(0xFF0059C9)
+                                )
+                            ),
+                            shape = RoundedCornerShape(28.dp)
+                        )
+                )
 
+                // Glow
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()   // ✔
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0xFF41A9F7).copy(alpha = 0.6f),
+                                    Color(0x0041A9F7)
+                                ),
+                                center = androidx.compose.ui.geometry.Offset(0.5f, 1f),
+                                radius = 600f
+                            ),
+                            shape = RoundedCornerShape(28.dp)
+                        )
+                )
+
+                // Text
                 Text(
                     text = "Continue",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (phoneNumber.length == 10) Color(0xFFFFFFFF) else Color(0xFFFFFFFF).copy(alpha = 0.5f)
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
         }
+
 
         Spacer(modifier = Modifier.height(24.dp))
     }
@@ -316,7 +301,8 @@ fun OtpSheetContent(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .heightIn(max = 420.dp)
             .wrapContentHeight()
             .verticalScroll(rememberScrollState())
     ) {
